@@ -11,9 +11,17 @@ import {
     getAllAppointments,
     getInventory,
     addInventoryItem,
+    importInventoryFromCsv,
     updateInventoryItem,
     deleteInventoryItem,
 } from '../controllers/admin.controller.js';
+import { getAdminStorePurchases, getAdminInventoryMovements } from '../controllers/inventory.controller.js';
+import {
+    getAdminPrescriptions,
+    getAdminPrescriptionById,
+    markPrescriptionDispensed,
+} from '../controllers/prescription.controller.js';
+import { PrescriptionStatus } from '../models/Prescription.js';
 
 const router = express.Router();
 
@@ -63,6 +71,34 @@ router.get(
 );
 
 router.get(
+    '/prescriptions',
+    [
+        ...listQueryValidators,
+        query('search').optional().trim().isLength({ max: 100 }).withMessage('search is too long'),
+        query('status')
+            .optional()
+            .isIn(['all', PrescriptionStatus.DRAFT, PrescriptionStatus.ISSUED, PrescriptionStatus.DISPENSED, PrescriptionStatus.CANCELLED])
+            .withMessage('status is invalid'),
+    ],
+    handleValidationErrors,
+    getAdminPrescriptions
+);
+
+router.get(
+    '/prescriptions/:prescriptionId',
+    [param('prescriptionId').isMongoId().withMessage('prescriptionId must be valid')],
+    handleValidationErrors,
+    getAdminPrescriptionById
+);
+
+router.patch(
+    '/prescriptions/:prescriptionId/dispense',
+    [param('prescriptionId').isMongoId().withMessage('prescriptionId must be valid')],
+    handleValidationErrors,
+    markPrescriptionDispensed
+);
+
+router.get(
     '/inventory',
     [
         ...listQueryValidators,
@@ -72,6 +108,41 @@ router.get(
     handleValidationErrors,
     getInventory
 );
+
+router.get(
+    '/inventory/purchases',
+    [
+        ...listQueryValidators,
+        query('search').optional().trim().isLength({ max: 100 }).withMessage('search is too long'),
+    ],
+    handleValidationErrors,
+    getAdminStorePurchases
+);
+
+router.get(
+    '/inventory/movements',
+    [
+        query('limit').optional().isInt({ min: 1, max: 500 }).withMessage('limit must be between 1 and 500').toInt(),
+        query('search').optional().trim().isLength({ max: 100 }).withMessage('search is too long'),
+    ],
+    handleValidationErrors,
+    getAdminInventoryMovements
+);
+
+router.post(
+    '/inventory/import-csv',
+    [
+        body('csvData')
+            .isString()
+            .withMessage('csvData must be a string')
+            .trim()
+            .isLength({ min: 1, max: 1000000 })
+            .withMessage('csvData must be between 1 and 1000000 characters'),
+    ],
+    handleValidationErrors,
+    importInventoryFromCsv
+);
+
 router.post(
     '/inventory',
     [

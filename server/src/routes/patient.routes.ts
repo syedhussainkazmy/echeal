@@ -1,5 +1,5 @@
 import express from 'express';
-import { body, query } from 'express-validator';
+import { body, param, query } from 'express-validator';
 import { verifyToken, authorizeRoles } from '../middlewares/auth.middleware.js';
 import { handleValidationErrors } from '../middlewares/validation.middleware.js';
 import { UserRole } from '../models/User.js';
@@ -12,6 +12,9 @@ import {
     bookAppointment,
     getPatientAppointments,
 } from '../controllers/patient.controller.js';
+import { getPatientPrescriptions, getPatientPrescriptionById } from '../controllers/prescription.controller.js';
+import { getStoreInventory, createStorePurchase, getPatientStorePurchases } from '../controllers/inventory.controller.js';
+import { PrescriptionStatus } from '../models/Prescription.js';
 
 const router = express.Router();
 
@@ -163,5 +166,51 @@ router.get(
     handleValidationErrors,
     getPatientAppointments
 );
+
+router.get(
+    '/prescriptions',
+    [
+        ...listQueryValidators,
+        query('search').optional().trim().isLength({ max: 100 }).withMessage('search is too long'),
+        query('status')
+            .optional()
+            .isIn(['all', PrescriptionStatus.DRAFT, PrescriptionStatus.ISSUED, PrescriptionStatus.DISPENSED, PrescriptionStatus.CANCELLED])
+            .withMessage('status is invalid'),
+    ],
+    handleValidationErrors,
+    getPatientPrescriptions
+);
+
+router.get(
+    '/prescriptions/:prescriptionId',
+    [param('prescriptionId').isMongoId().withMessage('prescriptionId must be valid')],
+    handleValidationErrors,
+    getPatientPrescriptionById
+);
+
+router.get(
+    '/store/items',
+    [
+        ...listQueryValidators,
+        query('search').optional().trim().isLength({ max: 100 }).withMessage('search is too long'),
+        query('category').optional().isIn(['all', 'medicine', 'equipment', 'supplies']).withMessage('category is invalid'),
+    ],
+    handleValidationErrors,
+    getStoreInventory
+);
+
+router.post(
+    '/store/purchases',
+    [
+        body('items').isArray({ min: 1 }).withMessage('items must contain at least one item'),
+        body('items.*.inventoryItemId').isMongoId().withMessage('items.inventoryItemId must be valid'),
+        body('items.*.quantity').isInt({ min: 1, max: 1000000 }).withMessage('items.quantity must be between 1 and 1000000').toInt(),
+        body('notes').optional().trim().isLength({ max: 500 }).withMessage('notes are too long'),
+    ],
+    handleValidationErrors,
+    createStorePurchase
+);
+
+router.get('/store/purchases', listQueryValidators, handleValidationErrors, getPatientStorePurchases);
 
 export default router;

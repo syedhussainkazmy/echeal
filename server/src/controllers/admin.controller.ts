@@ -230,3 +230,156 @@ export const deleteInventoryItem = async (req: AuthRequest, res: Response) => {
         res.status(500).json({ message: 'Server error' });
     }
 };
+
+const parseCsvLine = (line: string) => {
+    const values: string[] = [];
+    let current = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+
+        if (char === '"') {
+            const next = line[i + 1];
+            if (inQuotes && next === '"') {
+                current += '"';
+                i++;
+            } else {
+                inQuotes = !inQuotes;
+            }
+            continue;
+        }
+
+        if (char === ',' && !inQuotes) {
+            values.push(current.trim());
+            current = '';
+            continue;
+        }
+
+        current += char;
+    }
+
+    values.push(current.trim());
+    return values;
+};
+
+export const importInventoryFromCsv = async (req: AuthRequest, res: Response) => {
+    try {
+        const csvData = String(req.body.csvData || '');
+        const lines = csvData
+            .split(/\r?\n/)
+            .map((line) => line.trim())
+            .filter((line) => line.length > 0);
+
+        if (lines.length < 2) {
+            return res.status(400).json({
+                message: 'CSV must include a header row and at least one data row',
+            });
+        }
+
+        const headers = parseCsvLine(lines[0]).map((header) => header.toLowerCase());
+        const headerIndex = {
+            name: headers.indexOf('name'),
+            category: headers.indexOf('category'),
+            quantity: headers.indexOf('quantity'),
+            unit: headers.indexOf('unit'),
+            lowStockThreshold: headers.indexOf('lowstockthreshold'),
+            supplierName: headers.indexOf('suppliername'),
+        };
+
+        if (headerIndex.name < 0 || headerIndex.category < 0 || headerIndex.quantity < 0 || headerIndex.unit < 0) {
+            return res.status(400).json({
+                message: 'CSV header must include: name, category, quantity, unit',
+            });
+        }
+
+        let created = 0;
+        let updated = 0;
+        let skipped = 0;
+        const errors: Array<{ line: number; message: string }> = [];
+
+        for (let i = 1; i < lines.length; i++) {
+            const lineNumber = i + 1;
+            const columns = parseCsvLine(lines[i]);
+
+            const name = String(columns[headerIndex.name] || '').trim();
+            const category = String(columns[headerIndex.category] || '').trim().toLowerCase();
+            const quantityRaw = String(columns[headerIndex.quantity] || '').trim();
+            const unit = String(columns[headerIndex.unit] || '').trim();
+            const lowStockRaw = headerIndex.lowStockThreshold >= 0 ? String(columns[headerIndex.lowStockThreshold] || '').trim() : '';
+            const supplierName = headerIndex.supplierName >= 0 ? String(columns[headerIndex.supplierName] || '').trim() : '';
+
+            if (!name || !category || !quantityRaw || !unit) {
+                skipped++;
+                errors.push({ line: lineNumber, message: 'Missing required fields (name, category, quantity, unit)' });
+                continue;
+            }
+
+            if (!['medicine', 'equipment', 'supplies'].includes(category)) {
+                skipped++;
+                errors.push({ line: lineNumber, message: `Invalid category: ${category}` });
+                continue;
+            }
+
+            const quantity = Number(quantityRaw);
+            if (!Number.isInteger(quantity) || quantity < 0) {
+                skipped++;
+                errors.push({ line: lineNumber, message: `Invalid quantity: ${quantityRaw}` });
+                continue;
+            }
+
+            let lowStockThreshold: number | undefined;
+            if (lowStockRaw) {
+                const parsedLow = Number(lowStockRaw);
+                if (!Number.isInteger(parsedLow) || parsedLow < 0) {
+                    skipped++;
+                    errors.push({ line: lineNumber, message: `Invalid lowStockThreshold: ${lowStockRaw}` });
+                    continue;
+                }
+                lowStockThreshold = parsedLow;
+            }
+
+            const existing = await InventoryItem.findOne({ name, category });
+
+            if (existing) {
+                existing.quantity += quantity;
+                existing.unit = unit;
+                if (typeof lowStockThreshold === 'number') {
+                    existing.lowStockThreshold = lowStockThreshold;
+                }
+                if (supplierName) {
+                    existing.supplierName = supplierName;
+                }
+                existing.lastRestocked = new Date();
+                await existing.save();
+                updated++;
+            } else {
+                await InventoryItem.create({
+                    name,
+                    category,
+                    quantity,
+                    unit,
+                    lowStockThreshold: typeof lowStockThreshold === 'number' ? lowStockThreshold : 10,
+                    supplierName,
+                    lastRestocked: new Date(),
+                });
+                created++;
+            }
+        }
+
+        return res.status(200).json({
+            message: 'CSV import completed',
+            summary: {
+                processedRows: lines.length - 1,
+                created,
+                updated,
+                skipped,
+                errorCount: errors.length,
+            },
+            errors,
+        });
+    } catch (error) {
+        console.error('Error importing inventory CSV:', error);
+        return res.status(500).json({ message: 'Server error' });
+    }
+};

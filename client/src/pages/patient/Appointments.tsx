@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 import api from '../../lib/api';
 import { format } from 'date-fns';
 import { CalendarDays, Clock, Plus, X, Stethoscope } from 'lucide-react';
+import { PageLoading } from '../../components/ui/PageLoading';
+import { ModalShell } from '../../components/ui/ModalShell';
+import { AppointmentStatusBadge } from '../../components/appointments/AppointmentStatusBadge';
 
 interface Doctor {
     _id: string;
@@ -22,13 +25,6 @@ interface Appointment {
 const formatLocalDateTimeInput = (date: Date): string => {
     const pad = (value: number) => value.toString().padStart(2, '0');
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
-};
-
-const statusColors: Record<string, string> = {
-    pending: 'bg-yellow-100 text-yellow-700 border border-yellow-200',
-    confirmed: 'bg-blue-100 text-blue-700 border border-blue-200',
-    completed: 'bg-green-100 text-green-700 border border-green-200',
-    cancelled: 'bg-red-100 text-red-700 border border-red-200',
 };
 
 export default function PatientAppointments() {
@@ -104,7 +100,7 @@ export default function PatientAppointments() {
     const upcoming = appointments.filter(a => new Date(a.appointmentDate) >= new Date() && a.status !== 'cancelled');
     const past = appointments.filter(a => new Date(a.appointmentDate) < new Date() || a.status === 'completed' || a.status === 'cancelled');
 
-    if (loading) return <div className="flex justify-center items-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-500" /></div>;
+    if (loading) return <PageLoading role="patient" />;
 
     return (
         <div className="space-y-8">
@@ -115,7 +111,7 @@ export default function PatientAppointments() {
                 </div>
                 <button
                     onClick={() => setShowBooking(true)}
-                    className="flex items-center gap-2 bg-teal-600 text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-teal-700 transition-colors shadow-sm"
+                        className="flex items-center gap-2 bg-teal-600 text-white px-4 py-2.5 rounded-md text-sm font-semibold hover:bg-teal-700 transition-colors"
                 >
                     <Plus className="h-4 w-4" /> Book Appointment
                 </button>
@@ -123,8 +119,8 @@ export default function PatientAppointments() {
 
             {/* Booking Modal */}
             {showBooking && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6">
+                <ModalShell>
+                    <div className="bg-white rounded-md border border-gray-200 w-full max-w-md mx-4 p-6">
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-lg font-bold text-gray-900">Book an Appointment</h2>
                             <button onClick={() => setShowBooking(false)} className="text-gray-400 hover:text-gray-600"><X className="h-5 w-5" /></button>
@@ -136,7 +132,7 @@ export default function PatientAppointments() {
                                     required
                                     value={selectedDoctor}
                                     onChange={e => setSelectedDoctor(e.target.value)}
-                                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
+                                    className="w-full border border-gray-200 rounded px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
                                 >
                                     <option value="">-- Choose a doctor --</option>
                                     {doctors.map(d => (
@@ -155,7 +151,7 @@ export default function PatientAppointments() {
                                     value={appointmentDate}
                                     onChange={e => setAppointmentDate(e.target.value)}
                                     min={formatLocalDateTimeInput(new Date(Date.now() + 5 * 60 * 1000))}
-                                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
+                                    className="w-full border border-gray-200 rounded px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
                                 />
                             </div>
                             <div>
@@ -166,35 +162,35 @@ export default function PatientAppointments() {
                                     onChange={e => setReason(e.target.value)}
                                     rows={3}
                                     placeholder="Describe your symptoms or reason..."
-                                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 resize-none"
+                                    className="w-full border border-gray-200 rounded px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
                                 />
                             </div>
                             {error && <p className="text-sm text-red-600">{error}</p>}
                             <div className="flex gap-3 pt-2">
-                                <button type="button" onClick={() => setShowBooking(false)} className="flex-1 border border-gray-200 text-gray-600 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors">Cancel</button>
-                                <button type="submit" disabled={booking} className="flex-1 bg-teal-600 text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-teal-700 transition-colors disabled:opacity-60">
+                                <button type="button" onClick={() => setShowBooking(false)} className="flex-1 border border-gray-200 text-gray-600 py-2.5 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors">Cancel</button>
+                                <button type="submit" disabled={booking} className="flex-1 bg-teal-600 text-white py-2.5 rounded-md text-sm font-semibold hover:bg-teal-700 transition-colors disabled:opacity-60">
                                     {booking ? 'Booking...' : 'Confirm Booking'}
                                 </button>
                             </div>
                         </form>
                     </div>
-                </div>
+                </ModalShell>
             )}
 
             {/* Upcoming */}
             <section>
                 <h2 className="text-base font-semibold text-gray-700 mb-3">Upcoming ({upcoming.length})</h2>
                 {upcoming.length === 0 ? (
-                    <div className="bg-white rounded-xl border border-gray-100 p-10 text-center">
+                    <div className="bg-white rounded-md border border-gray-100 p-10 text-center">
                         <CalendarDays className="h-12 w-12 text-gray-300 mx-auto mb-3" />
                         <p className="text-gray-400">No upcoming appointments. Book one now!</p>
                     </div>
                 ) : (
                     <div className="space-y-3">
                         {upcoming.map(a => (
-                            <div key={a._id} className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex items-center justify-between">
+                            <div key={a._id} className="bg-white rounded-md border border-gray-100 p-5 flex items-center justify-between">
                                 <div className="flex items-center gap-4">
-                                    <div className="bg-teal-50 rounded-lg p-3"><Stethoscope className="h-5 w-5 text-teal-600" /></div>
+                                    <div className="bg-teal-50 rounded p-3"><Stethoscope className="h-5 w-5 text-teal-600" /></div>
                                     <div>
                                         <p className="font-semibold text-gray-800">Dr. {a.doctor.firstName} {a.doctor.lastName}</p>
                                         <p className="text-sm text-gray-500">{a.reasonForVisit}</p>
@@ -203,7 +199,7 @@ export default function PatientAppointments() {
                                 <div className="text-right">
                                     <p className="text-sm font-medium text-gray-700 flex items-center gap-1 justify-end"><CalendarDays className="h-3.5 w-3.5" />{format(new Date(a.appointmentDate), 'MMM d, yyyy')}</p>
                                     <p className="text-xs text-gray-500 flex items-center gap-1 justify-end mt-0.5"><Clock className="h-3 w-3" />{format(new Date(a.appointmentDate), 'h:mm a')}</p>
-                                    <span className={`inline-block mt-1 text-xs px-2.5 py-0.5 rounded-full font-medium ${statusColors[a.status]}`}>{a.status}</span>
+                                    <AppointmentStatusBadge status={a.status} />
                                 </div>
                             </div>
                         ))}
@@ -217,7 +213,7 @@ export default function PatientAppointments() {
                     <h2 className="text-base font-semibold text-gray-700 mb-3">Past Appointments ({past.length})</h2>
                     <div className="space-y-3">
                         {past.map(a => (
-                            <div key={a._id} className="bg-white rounded-xl border border-gray-100 p-4 flex items-center justify-between opacity-80 hover:opacity-100 transition-opacity">
+                            <div key={a._id} className="bg-white rounded-md border border-gray-100 p-4 flex items-center justify-between opacity-80 hover:opacity-100 transition-opacity">
                                 <div>
                                     <p className="font-medium text-gray-700 text-sm">Dr. {a.doctor.firstName} {a.doctor.lastName}</p>
                                     <p className="text-xs text-gray-400">{a.reasonForVisit}</p>
@@ -225,7 +221,7 @@ export default function PatientAppointments() {
                                 </div>
                                 <div className="text-right">
                                     <p className="text-xs text-gray-500">{format(new Date(a.appointmentDate), 'MMM d, yyyy')}</p>
-                                    <span className={`inline-block mt-1 text-xs px-2.5 py-0.5 rounded-full font-medium ${statusColors[a.status]}`}>{a.status}</span>
+                                    <AppointmentStatusBadge status={a.status} />
                                 </div>
                             </div>
                         ))}

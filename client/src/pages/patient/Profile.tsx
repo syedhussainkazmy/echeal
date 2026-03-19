@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import api from '../../lib/api';
 import { UserCircle, Save, CheckCircle } from 'lucide-react';
+import { PageLoading } from '../../components/ui/PageLoading';
 
 interface Profile {
     dateOfBirth?: string;
@@ -69,7 +70,7 @@ export default function PatientProfile() {
         }
     };
 
-    if (loading) return <div className="flex justify-center items-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-500" /></div>;
+    if (loading) return <PageLoading role="patient" />;
 
     return (
         <div className="space-y-8 max-w-2xl">
@@ -79,7 +80,7 @@ export default function PatientProfile() {
             </div>
 
             {/* Account Info (read-only) */}
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+            <div className="bg-white rounded-md border border-gray-100 p-6">
                 <div className="flex items-center gap-4 mb-4">
                     <div className="bg-teal-100 rounded-full p-4">
                         <UserCircle className="h-8 w-8 text-teal-600" />
@@ -93,17 +94,17 @@ export default function PatientProfile() {
             </div>
 
             {/* Editable Profile */}
-            <form onSubmit={handleSave} className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-6">
+            <form onSubmit={handleSave} className="bg-white rounded-md border border-gray-100 p-6 space-y-6">
                 <h2 className="text-base font-semibold text-gray-800">Health Information</h2>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
-                        <input type="date" value={form.dateOfBirth} onChange={e => setForm(f => ({ ...f, dateOfBirth: e.target.value }))} className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400" />
+                        <input type="date" value={form.dateOfBirth} onChange={e => setForm(f => ({ ...f, dateOfBirth: e.target.value }))} className="w-full border border-gray-200 rounded px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
-                        <select value={form.gender} onChange={e => setForm(f => ({ ...f, gender: e.target.value }))} className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400">
+                        <select value={form.gender} onChange={e => setForm(f => ({ ...f, gender: e.target.value }))} className="w-full border border-gray-200 rounded px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500">
                             <option value="">Not specified</option>
                             <option value="male">Male</option>
                             <option value="female">Female</option>
@@ -112,20 +113,20 @@ export default function PatientProfile() {
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Blood Group</label>
-                        <select value={form.bloodGroup} onChange={e => setForm(f => ({ ...f, bloodGroup: e.target.value }))} className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400">
+                        <select value={form.bloodGroup} onChange={e => setForm(f => ({ ...f, bloodGroup: e.target.value }))} className="w-full border border-gray-200 rounded px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500">
                             <option value="">Select blood group</option>
                             {BLOOD_GROUPS.map(bg => <option key={bg} value={bg}>{bg}</option>)}
                         </select>
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Contact Number</label>
-                        <input type="tel" value={form.contactNumber} onChange={e => setForm(f => ({ ...f, contactNumber: e.target.value }))} placeholder="+1 234 567 8900" className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400" />
+                        <input type="tel" value={form.contactNumber} onChange={e => setForm(f => ({ ...f, contactNumber: e.target.value }))} placeholder="+1 234 567 8900" className="w-full border border-gray-200 rounded px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
                     </div>
                 </div>
 
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                    <textarea value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} rows={2} placeholder="Your home address" className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 resize-none" />
+                    <textarea value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} rows={2} placeholder="Your home address" className="w-full border border-gray-200 rounded px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none" />
                 </div>
 
                 <div className="border-t border-gray-100 pt-5">
@@ -133,15 +134,15 @@ export default function PatientProfile() {
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div>
                             <label className="block text-xs text-gray-600 mb-1">Full Name</label>
-                            <input type="text" value={form.emergencyName} onChange={e => setForm(f => ({ ...f, emergencyName: e.target.value }))} placeholder="Jane Doe" className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400" />
+                            <input type="text" value={form.emergencyName} onChange={e => setForm(f => ({ ...f, emergencyName: e.target.value }))} placeholder="Jane Doe" className="w-full border border-gray-200 rounded px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
                         </div>
                         <div>
                             <label className="block text-xs text-gray-600 mb-1">Relation</label>
-                            <input type="text" value={form.emergencyRelation} onChange={e => setForm(f => ({ ...f, emergencyRelation: e.target.value }))} placeholder="Spouse" className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400" />
+                            <input type="text" value={form.emergencyRelation} onChange={e => setForm(f => ({ ...f, emergencyRelation: e.target.value }))} placeholder="Spouse" className="w-full border border-gray-200 rounded px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
                         </div>
                         <div>
                             <label className="block text-xs text-gray-600 mb-1">Phone Number</label>
-                            <input type="tel" value={form.emergencyContact} onChange={e => setForm(f => ({ ...f, emergencyContact: e.target.value }))} placeholder="+1 234 567 8900" className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400" />
+                            <input type="tel" value={form.emergencyContact} onChange={e => setForm(f => ({ ...f, emergencyContact: e.target.value }))} placeholder="+1 234 567 8900" className="w-full border border-gray-200 rounded px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
                         </div>
                     </div>
                 </div>
@@ -149,7 +150,7 @@ export default function PatientProfile() {
                 {error && <p className="text-sm text-red-600">{error}</p>}
 
                 <div className="flex items-center gap-4 pt-2">
-                    <button type="submit" disabled={saving} className="flex items-center gap-2 bg-teal-600 text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-teal-700 transition-colors disabled:opacity-60">
+                    <button type="submit" disabled={saving} className="flex items-center gap-2 bg-teal-600 text-white px-6 py-2.5 rounded-md text-sm font-semibold hover:bg-teal-700 transition-colors disabled:opacity-60">
                         <Save className="h-4 w-4" />
                         {saving ? 'Saving...' : 'Save Profile'}
                     </button>

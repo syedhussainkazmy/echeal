@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import api from '../../lib/api';
 import { format } from 'date-fns';
 import { ArrowLeft, UserCircle, Activity, FileText } from 'lucide-react';
+import { PageLoading } from '../../components/ui/PageLoading';
 
 interface EHRData {
     profile: {
@@ -44,7 +45,7 @@ export default function PatientEHR() {
         }
     }, [patientId]);
 
-    if (loading) return <div className="flex justify-center items-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" /></div>;
+    if (loading) return <PageLoading role="doctor" />;
     if (!ehr) return <div className="text-center py-16 text-gray-400">Patient not found.</div>;
 
     const { profile, vitals, pastAppointments } = ehr;
@@ -62,7 +63,7 @@ export default function PatientEHR() {
             </div>
 
             {/* Patient Info */}
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+                <div className="bg-white rounded-md border border-gray-100 p-6">
                 <div className="flex items-center gap-4 mb-5">
                     <div className="bg-blue-100 rounded-full p-4"><UserCircle className="h-8 w-8 text-blue-600" /></div>
                     <div>
@@ -77,23 +78,23 @@ export default function PatientEHR() {
                         { label: 'Date of Birth', value: profile.dateOfBirth ? format(new Date(profile.dateOfBirth), 'MMM d, yyyy') : '—' },
                         { label: 'Contact', value: profile.contactNumber || '—' },
                     ].map(item => (
-                        <div key={item.label} className="bg-gray-50 rounded-lg p-3">
-                            <p className="text-xs text-gray-400 uppercase tracking-wide">{item.label}</p>
-                            <p className="text-sm font-semibold text-gray-800 capitalize mt-1">{item.value}</p>
+                            <div key={item.label}>
+                                <p className="text-xs text-gray-400">{item.label}</p>
+                                <p className="text-sm font-semibold text-gray-800 capitalize mt-0.5">{item.value}</p>
                         </div>
                     ))}
                 </div>
                 {profile.emergencyContact?.name && (
-                    <div className="mt-4 p-3 bg-red-50 rounded-lg border border-red-100">
-                        <p className="text-xs font-semibold text-red-700 uppercase tracking-wide mb-1">Emergency Contact</p>
+                    <div className="mt-4 border-l-2 border-red-300 pl-3">
+                        <p className="text-xs font-medium text-red-600 mb-0.5">Emergency Contact</p>
                         <p className="text-sm text-gray-700">{profile.emergencyContact.name} ({profile.emergencyContact.relation}) — {profile.emergencyContact.contactNumber}</p>
                     </div>
                 )}
             </div>
 
             {/* Vitals */}
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-50 flex items-center gap-2">
+            <div className="bg-white rounded-md border border-gray-100 overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
                     <Activity className="h-5 w-5 text-teal-600" />
                     <h2 className="text-base font-semibold text-gray-800">Vitals History ({vitals.length})</h2>
                 </div>
@@ -102,7 +103,7 @@ export default function PatientEHR() {
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
-                            <thead className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+                            <thead className="border-b border-gray-100 text-xs text-gray-400">
                                 <tr>
                                     <th className="px-4 py-3 text-left">Date</th>
                                     <th className="px-4 py-3 text-left">Blood Pressure</th>
@@ -132,8 +133,8 @@ export default function PatientEHR() {
             </div>
 
             {/* Past Appointments */}
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-50 flex items-center gap-2">
+            <div className="bg-white rounded-md border border-gray-100 overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
                     <FileText className="h-5 w-5 text-blue-600" />
                     <h2 className="text-base font-semibold text-gray-800">Appointment History ({pastAppointments.length})</h2>
                 </div>

@@ -12,6 +12,15 @@ import {
     updateAppointmentStatus,
     getPatientEHR,
 } from '../controllers/doctor.controller.js';
+import {
+    createPrescription,
+    getDoctorPrescriptions,
+    getDoctorPrescriptionById,
+    updateDoctorPrescription,
+    cancelDoctorPrescription,
+} from '../controllers/prescription.controller.js';
+import { getDoctorPatientPurchases } from '../controllers/inventory.controller.js';
+import { PrescriptionStatus } from '../models/Prescription.js';
 
 const router = express.Router();
 
@@ -92,5 +101,140 @@ router.patch(
     handleValidationErrors,
     updateAppointmentStatus
 );
+
+router.post(
+    '/prescriptions',
+    [
+        body('patientId').isMongoId().withMessage('patientId must be a valid id'),
+        body('appointmentId').optional().isMongoId().withMessage('appointmentId must be a valid id'),
+        body('status')
+            .optional()
+            .isIn([PrescriptionStatus.DRAFT, PrescriptionStatus.ISSUED])
+            .withMessage('status must be draft or issued'),
+        body('notes').optional().trim().isLength({ max: 1500 }).withMessage('notes are too long'),
+        body('medications').isArray({ min: 1, max: 50 }).withMessage('medications must contain 1-50 items'),
+        body('medications.*.medicationName')
+            .trim()
+            .notEmpty()
+            .withMessage('medicationName is required')
+            .isLength({ max: 120 })
+            .withMessage('medicationName is too long'),
+        body('medications.*.dosage')
+            .trim()
+            .notEmpty()
+            .withMessage('dosage is required')
+            .isLength({ max: 120 })
+            .withMessage('dosage is too long'),
+        body('medications.*.frequency')
+            .trim()
+            .notEmpty()
+            .withMessage('frequency is required')
+            .isLength({ max: 120 })
+            .withMessage('frequency is too long'),
+        body('medications.*.durationDays')
+            .isInt({ min: 1, max: 365 })
+            .withMessage('durationDays must be between 1 and 365')
+            .toInt(),
+        body('medications.*.quantity')
+            .isInt({ min: 1, max: 10000 })
+            .withMessage('quantity must be between 1 and 10000')
+            .toInt(),
+        body('medications.*.instructions')
+            .optional()
+            .trim()
+            .isLength({ max: 500 })
+            .withMessage('instructions are too long'),
+        body('medications.*.inventoryItem').optional().isMongoId().withMessage('inventoryItem must be a valid id'),
+    ],
+    handleValidationErrors,
+    createPrescription
+);
+
+router.get(
+    '/prescriptions',
+    [
+        ...listQueryValidators,
+        query('status')
+            .optional()
+            .isIn(['all', PrescriptionStatus.DRAFT, PrescriptionStatus.ISSUED, PrescriptionStatus.DISPENSED, PrescriptionStatus.CANCELLED])
+            .withMessage('status is invalid'),
+    ],
+    handleValidationErrors,
+    getDoctorPrescriptions
+);
+
+router.get(
+    '/prescriptions/:prescriptionId',
+    [param('prescriptionId').isMongoId().withMessage('prescriptionId must be valid')],
+    handleValidationErrors,
+    getDoctorPrescriptionById
+);
+
+router.patch(
+    '/prescriptions/:prescriptionId',
+    [
+        param('prescriptionId').isMongoId().withMessage('prescriptionId must be valid'),
+        body().custom((payload: Record<string, unknown>) => {
+            if (!payload || Object.keys(payload).length === 0) {
+                throw new Error('At least one field must be provided');
+            }
+            return true;
+        }),
+        body('notes').optional().trim().isLength({ max: 1500 }).withMessage('notes are too long'),
+        body('status')
+            .optional()
+            .isIn([PrescriptionStatus.DRAFT, PrescriptionStatus.ISSUED, PrescriptionStatus.CANCELLED])
+            .withMessage('status is invalid for doctor update'),
+        body('medications').optional().isArray({ min: 1, max: 50 }).withMessage('medications must contain 1-50 items'),
+        body('medications.*.medicationName')
+            .optional()
+            .trim()
+            .notEmpty()
+            .withMessage('medicationName cannot be empty')
+            .isLength({ max: 120 })
+            .withMessage('medicationName is too long'),
+        body('medications.*.dosage')
+            .optional()
+            .trim()
+            .notEmpty()
+            .withMessage('dosage cannot be empty')
+            .isLength({ max: 120 })
+            .withMessage('dosage is too long'),
+        body('medications.*.frequency')
+            .optional()
+            .trim()
+            .notEmpty()
+            .withMessage('frequency cannot be empty')
+            .isLength({ max: 120 })
+            .withMessage('frequency is too long'),
+        body('medications.*.durationDays')
+            .optional()
+            .isInt({ min: 1, max: 365 })
+            .withMessage('durationDays must be between 1 and 365')
+            .toInt(),
+        body('medications.*.quantity')
+            .optional()
+            .isInt({ min: 1, max: 10000 })
+            .withMessage('quantity must be between 1 and 10000')
+            .toInt(),
+        body('medications.*.instructions')
+            .optional()
+            .trim()
+            .isLength({ max: 500 })
+            .withMessage('instructions are too long'),
+        body('medications.*.inventoryItem').optional().isMongoId().withMessage('inventoryItem must be a valid id'),
+    ],
+    handleValidationErrors,
+    updateDoctorPrescription
+);
+
+router.patch(
+    '/prescriptions/:prescriptionId/cancel',
+    [param('prescriptionId').isMongoId().withMessage('prescriptionId must be valid')],
+    handleValidationErrors,
+    cancelDoctorPrescription
+);
+
+router.get('/patient-purchases', listQueryValidators, handleValidationErrors, getDoctorPatientPurchases);
 
 export default router;

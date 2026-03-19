@@ -3,6 +3,7 @@ import { useLocation, useSearchParams } from 'react-router-dom';
 import api from '../../lib/api';
 import { Users, CheckCircle, XCircle, ShieldCheck, UserCircle } from 'lucide-react';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
+import { PageLoading } from '../../components/ui/PageLoading';
 
 interface StaffMember {
     _id: string;
@@ -76,7 +77,7 @@ export default function AdminStaff() {
         finally { setSavingId(null); }
     };
 
-    if (loading) return <div className="flex justify-center items-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600" /></div>;
+    if (loading) return <PageLoading role="admin" />;
 
     return (
         <div className="space-y-8">
@@ -85,14 +86,14 @@ export default function AdminStaff() {
                 <p className="text-gray-500 mt-1">Manage doctors and administrators</p>
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-50 flex items-center gap-4">
+                <div className="bg-white rounded-md border border-gray-100 overflow-hidden">
+                    <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-4">
                     <input
                         type="text"
                         placeholder="Search staff..."
                         value={search}
                         onChange={e => setSearch(e.target.value)}
-                        className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
+                            className="flex-1 border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
                     />
                     <span className="text-sm text-gray-500">{total} members</span>
                 </div>
@@ -105,7 +106,7 @@ export default function AdminStaff() {
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
-                            <thead className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+                            <thead className="border-b border-gray-100 text-xs text-gray-400">
                                 <tr>
                                     <th className="px-6 py-3 text-left">Name</th>
                                     <th className="px-6 py-3 text-left">Role</th>
@@ -177,7 +178,7 @@ export default function AdminStaff() {
                         <select
                             value={limit}
                             onChange={(e) => setLimit(Number(e.target.value))}
-                            className="border border-gray-200 rounded-lg px-2 py-1.5 text-sm"
+                                className="border border-gray-200 rounded px-2 py-1.5 text-sm"
                         >
                             <option value={10}>10 / page</option>
                             <option value={20}>20 / page</option>
@@ -186,14 +187,14 @@ export default function AdminStaff() {
                         <button
                             onClick={() => setPage((p) => Math.max(1, p - 1))}
                             disabled={page <= 1}
-                            className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg disabled:opacity-50"
+                                className="px-3 py-1.5 text-sm border border-gray-200 rounded disabled:opacity-50"
                         >
                             Previous
                         </button>
                         <button
                             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                             disabled={page >= totalPages}
-                            className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg disabled:opacity-50"
+                                className="px-3 py-1.5 text-sm border border-gray-200 rounded disabled:opacity-50"
                         >
                             Next
                         </button>

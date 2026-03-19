@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import api from '../../lib/api';
 import { format } from 'date-fns';
 import { CalendarDays, Clock, CheckCircle, XCircle, X } from 'lucide-react';
+import { PageLoading } from '../../components/ui/PageLoading';
+import { AppointmentStatusBadge } from '../../components/appointments/AppointmentStatusBadge';
 
 interface Appointment {
     _id: string;
@@ -11,13 +13,6 @@ interface Appointment {
     status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
     notes?: string;
 }
-
-const statusColors: Record<string, string> = {
-    pending: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-    confirmed: 'bg-blue-100 text-blue-700 border-blue-200',
-    completed: 'bg-green-100 text-green-700 border-green-200',
-    cancelled: 'bg-red-100 text-red-700 border-red-200',
-};
 
 export default function DoctorAppointments() {
     const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -49,10 +44,10 @@ export default function DoctorAppointments() {
     const confirmed = appointments.filter(a => a.status === 'confirmed');
     const history = appointments.filter(a => a.status === 'completed' || a.status === 'cancelled');
 
-    if (loading) return <div className="flex justify-center items-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" /></div>;
+    if (loading) return <PageLoading role="doctor" />;
 
     const AppointmentCard = ({ a }: { a: Appointment }) => (
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+        <div className="bg-white rounded-md border border-gray-100 p-5">
             <div className="flex items-start justify-between gap-4 flex-wrap">
                 <div>
                     <p className="font-semibold text-gray-800">{a.patient.firstName} {a.patient.lastName}</p>
@@ -69,27 +64,27 @@ export default function DoctorAppointments() {
                         <Clock className="h-3.5 w-3.5" />
                         {format(new Date(a.appointmentDate), 'h:mm a')}
                     </div>
-                    <span className={`inline-block mt-2 text-xs px-2.5 py-0.5 rounded-full border font-medium ${statusColors[a.status]}`}>{a.status}</span>
+                    <AppointmentStatusBadge status={a.status} />
                 </div>
             </div>
 
             {/* Action Buttons */}
             {a.status === 'pending' && (
                 <div className="flex gap-2 mt-4 pt-4 border-t border-gray-50">
-                    <button onClick={() => updateStatus(a._id, 'confirmed')} className="flex items-center gap-1.5 text-sm bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                    <button onClick={() => updateStatus(a._id, 'confirmed')} className="flex items-center gap-1.5 text-sm bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors font-medium">
                         <CheckCircle className="h-3.5 w-3.5" /> Confirm
                     </button>
-                    <button onClick={() => updateStatus(a._id, 'cancelled')} className="flex items-center gap-1.5 text-sm border border-red-200 text-red-600 px-4 py-2 rounded-lg hover:bg-red-50 transition-colors font-medium">
+                    <button onClick={() => updateStatus(a._id, 'cancelled')} className="flex items-center gap-1.5 text-sm border border-red-200 text-red-600 px-4 py-2 rounded hover:bg-red-50 transition-colors font-medium">
                         <XCircle className="h-3.5 w-3.5" /> Cancel
                     </button>
                 </div>
             )}
             {a.status === 'confirmed' && (
                 <div className="flex gap-2 mt-4 pt-4 border-t border-gray-50">
-                    <button onClick={() => setNotesModal({ id: a._id, notes: a.notes || '' })} className="flex items-center gap-1.5 text-sm bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium">
+                    <button onClick={() => setNotesModal({ id: a._id, notes: a.notes || '' })} className="flex items-center gap-1.5 text-sm bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors font-medium">
                         <CheckCircle className="h-3.5 w-3.5" /> Mark Complete
                     </button>
-                    <button onClick={() => updateStatus(a._id, 'cancelled')} className="flex items-center gap-1.5 text-sm border border-red-200 text-red-600 px-4 py-2 rounded-lg hover:bg-red-50 transition-colors font-medium">
+                    <button onClick={() => updateStatus(a._id, 'cancelled')} className="flex items-center gap-1.5 text-sm border border-red-200 text-red-600 px-4 py-2 rounded hover:bg-red-50 transition-colors font-medium">
                         <XCircle className="h-3.5 w-3.5" /> Cancel
                     </button>
                 </div>
@@ -107,7 +102,7 @@ export default function DoctorAppointments() {
             {/* Notes/Complete Modal */}
             {notesModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6">
+                    <div className="bg-white rounded-md border border-gray-200 w-full max-w-md mx-4 p-6">
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-lg font-bold text-gray-900">Complete Appointment</h2>
                             <button onClick={() => setNotesModal(null)} className="text-gray-400 hover:text-gray-600"><X className="h-5 w-5" /></button>
@@ -118,11 +113,11 @@ export default function DoctorAppointments() {
                             value={notesModal.notes}
                             onChange={e => setNotesModal(m => m ? { ...m, notes: e.target.value } : null)}
                             placeholder="Diagnosis, prescription, follow-up instructions..."
-                            className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-400 resize-none"
+                            className="w-full border border-gray-200 rounded px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-400 resize-none"
                         />
                         <div className="flex gap-3 mt-4">
-                            <button onClick={() => setNotesModal(null)} className="flex-1 border border-gray-200 text-gray-600 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-50">Cancel</button>
-                            <button disabled={saving} onClick={() => updateStatus(notesModal.id, 'completed', notesModal.notes)} className="flex-1 bg-green-600 text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-green-700 disabled:opacity-60">
+                            <button onClick={() => setNotesModal(null)} className="flex-1 border border-gray-200 text-gray-600 py-2.5 rounded-md text-sm font-medium hover:bg-gray-50">Cancel</button>
+                            <button disabled={saving} onClick={() => updateStatus(notesModal.id, 'completed', notesModal.notes)} className="flex-1 bg-green-600 text-white py-2.5 rounded-md text-sm font-semibold hover:bg-green-700 disabled:opacity-60">
                                 {saving ? 'Saving...' : 'Mark Complete'}
                             </button>
                         </div>
@@ -149,7 +144,7 @@ export default function DoctorAppointments() {
                 </section>
             )}
             {appointments.length === 0 && (
-                <div className="bg-white rounded-xl border border-gray-100 p-16 text-center">
+                <div className="bg-white rounded-md border border-gray-100 p-16 text-center">
                     <CalendarDays className="h-12 w-12 text-gray-300 mx-auto mb-3" />
                     <p className="text-gray-400">No appointments yet. Patients will book once you're verified.</p>
                 </div>

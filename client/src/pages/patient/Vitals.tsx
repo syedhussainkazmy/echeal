@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import api from '../../lib/api';
 import { format } from 'date-fns';
 import { Activity, Plus, X, TrendingUp } from 'lucide-react';
+import { PageLoading } from '../../components/ui/PageLoading';
+import { ModalShell } from '../../components/ui/ModalShell';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
 interface Vital {
@@ -73,7 +75,7 @@ export default function PatientVitals() {
         heartRate: v.heartRate,
     }));
 
-    if (loading) return <div className="flex justify-center items-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-500" /></div>;
+    if (loading) return <PageLoading role="patient" />;
 
     return (
         <div className="space-y-8">
@@ -84,7 +86,7 @@ export default function PatientVitals() {
                 </div>
                 <button
                     onClick={() => setShowForm(true)}
-                    className="flex items-center gap-2 bg-teal-600 text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-teal-700 transition-colors shadow-sm"
+                    className="flex items-center gap-2 bg-teal-600 text-white px-4 py-2.5 rounded-md text-sm font-semibold hover:bg-teal-700 transition-colors"
                 >
                     <Plus className="h-4 w-4" /> Log Vitals
                 </button>
@@ -92,8 +94,8 @@ export default function PatientVitals() {
 
             {/* Log Vitals Modal */}
             {showForm && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 p-6 max-h-[90vh] overflow-y-auto">
+                <ModalShell>
+                    <div className="bg-white rounded-md border border-gray-200 w-full max-w-lg mx-4 p-6 max-h-[90vh] overflow-y-auto">
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-lg font-bold text-gray-900">Log New Vitals</h2>
                             <button onClick={() => setShowForm(false)} className="text-gray-400 hover:text-gray-600"><X className="h-5 w-5" /></button>
@@ -102,48 +104,48 @@ export default function PatientVitals() {
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">BP Systolic (mmHg)*</label>
-                                    <input type="number" required value={form.systolic} onChange={e => setForm(f => ({ ...f, systolic: e.target.value }))} placeholder="120" className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400" />
+                                    <input type="number" required value={form.systolic} onChange={e => setForm(f => ({ ...f, systolic: e.target.value }))} placeholder="120" className="w-full border border-gray-200 rounded px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">BP Diastolic (mmHg)*</label>
-                                    <input type="number" required value={form.diastolic} onChange={e => setForm(f => ({ ...f, diastolic: e.target.value }))} placeholder="80" className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400" />
+                                    <input type="number" required value={form.diastolic} onChange={e => setForm(f => ({ ...f, diastolic: e.target.value }))} placeholder="80" className="w-full border border-gray-200 rounded px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Heart Rate (bpm)*</label>
-                                    <input type="number" required value={form.heartRate} onChange={e => setForm(f => ({ ...f, heartRate: e.target.value }))} placeholder="72" className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400" />
+                                    <input type="number" required value={form.heartRate} onChange={e => setForm(f => ({ ...f, heartRate: e.target.value }))} placeholder="72" className="w-full border border-gray-200 rounded px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Blood Sugar (mg/dL)</label>
-                                    <input type="number" value={form.bloodSugar} onChange={e => setForm(f => ({ ...f, bloodSugar: e.target.value }))} placeholder="100" className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400" />
+                                    <input type="number" value={form.bloodSugar} onChange={e => setForm(f => ({ ...f, bloodSugar: e.target.value }))} placeholder="100" className="w-full border border-gray-200 rounded px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Weight (kg)</label>
-                                    <input type="number" value={form.weight} onChange={e => setForm(f => ({ ...f, weight: e.target.value }))} placeholder="70" className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400" />
+                                    <input type="number" value={form.weight} onChange={e => setForm(f => ({ ...f, weight: e.target.value }))} placeholder="70" className="w-full border border-gray-200 rounded px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Temperature (°C)</label>
-                                    <input type="number" step="0.1" value={form.temperature} onChange={e => setForm(f => ({ ...f, temperature: e.target.value }))} placeholder="37.0" className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400" />
+                                    <input type="number" step="0.1" value={form.temperature} onChange={e => setForm(f => ({ ...f, temperature: e.target.value }))} placeholder="37.0" className="w-full border border-gray-200 rounded px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
                                 </div>
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-                                <textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={2} placeholder="Any symptoms or observations..." className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 resize-none" />
+                                <textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={2} placeholder="Any symptoms or observations..." className="w-full border border-gray-200 rounded px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none" />
                             </div>
                             {error && <p className="text-sm text-red-600">{error}</p>}
                             <div className="flex gap-3 pt-2">
-                                <button type="button" onClick={() => setShowForm(false)} className="flex-1 border border-gray-200 text-gray-600 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors">Cancel</button>
-                                <button type="submit" disabled={submitting} className="flex-1 bg-teal-600 text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-teal-700 transition-colors disabled:opacity-60">
+                                <button type="button" onClick={() => setShowForm(false)} className="flex-1 border border-gray-200 text-gray-600 py-2.5 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors">Cancel</button>
+                                <button type="submit" disabled={submitting} className="flex-1 bg-teal-600 text-white py-2.5 rounded-md text-sm font-semibold hover:bg-teal-700 transition-colors disabled:opacity-60">
                                     {submitting ? 'Saving...' : 'Save Vitals'}
                                 </button>
                             </div>
                         </form>
                     </div>
-                </div>
+                </ModalShell>
             )}
 
             {/* Charts */}
             {chartData.length > 1 && (
-                <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+                <div className="bg-white rounded-md border border-gray-100 p-6">
                     <div className="flex items-center gap-2 mb-4">
                         <TrendingUp className="h-5 w-5 text-teal-600" />
                         <h2 className="text-base font-semibold text-gray-800">Blood Pressure Trend</h2>
@@ -162,8 +164,8 @@ export default function PatientVitals() {
             )}
 
             {/* Vitals History Table */}
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-50">
+            <div className="bg-white rounded-md border border-gray-100 overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-100">
                     <h2 className="text-base font-semibold text-gray-800">Vitals History</h2>
                 </div>
                 {vitals.length === 0 ? (
@@ -174,7 +176,7 @@ export default function PatientVitals() {
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
-                            <thead className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+                            <thead className="border-b border-gray-100 text-xs text-gray-400">
                                 <tr>
                                     <th className="px-6 py-3 text-left">Date</th>
                                     <th className="px-6 py-3 text-left">Blood Pressure</th>

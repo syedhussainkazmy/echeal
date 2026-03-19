@@ -58,7 +58,7 @@ export default function Login() {
             </div>
 
             <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-                <div className="bg-white py-8 px-4 shadow-xl sm:rounded-lg sm:px-10 border border-gray-100">
+                <div className="bg-white py-8 px-4 sm:rounded-md sm:px-10 border border-gray-100">
                     <form className="space-y-6" onSubmit={handleSubmit}>
                         {error && (
                             <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-4">

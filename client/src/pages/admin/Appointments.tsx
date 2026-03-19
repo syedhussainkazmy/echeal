@@ -4,6 +4,8 @@ import api from '../../lib/api';
 import { format } from 'date-fns';
 import { CalendarDays, Clock, Search } from 'lucide-react';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
+import { PageLoading } from '../../components/ui/PageLoading';
+import { AppointmentStatusBadge } from '../../components/appointments/AppointmentStatusBadge';
 
 interface Appointment {
     _id: string;
@@ -14,13 +16,6 @@ interface Appointment {
     status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
     notes?: string;
 }
-
-const statusColors: Record<string, string> = {
-    pending: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-    confirmed: 'bg-blue-100 text-blue-700 border-blue-200',
-    completed: 'bg-green-100 text-green-700 border-green-200',
-    cancelled: 'bg-red-100 text-red-700 border-red-200',
-};
 
 export default function AdminAppointments() {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -65,7 +60,7 @@ export default function AdminAppointments() {
         }
     }, [search, filterStatus, page, limit, location.search, setSearchParams]);
 
-    if (loading) return <div className="flex justify-center items-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600" /></div>;
+    if (loading) return <PageLoading role="admin" />;
 
     return (
         <div className="space-y-8">
@@ -74,8 +69,8 @@ export default function AdminAppointments() {
                 <p className="text-gray-500 mt-1">Monitor all appointments across the system</p>
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-50 flex items-center gap-3 flex-wrap">
+                <div className="bg-white rounded-md border border-gray-100 overflow-hidden">
+                    <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-3 flex-wrap">
                     <div className="flex items-center gap-2 flex-1 min-w-48">
                         <Search className="h-4 w-4 text-gray-400" />
                         <input
@@ -86,7 +81,7 @@ export default function AdminAppointments() {
                             className="flex-1 text-sm border-0 outline-none"
                         />
                     </div>
-                    <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400">
+                        <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500">
                         <option value="all">All Status</option>
                         <option value="pending">Pending</option>
                         <option value="confirmed">Confirmed</option>
@@ -104,7 +99,7 @@ export default function AdminAppointments() {
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
-                            <thead className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+                            <thead className="border-b border-gray-100 text-xs text-gray-400">
                                 <tr>
                                     <th className="px-6 py-3 text-left">Patient</th>
                                     <th className="px-6 py-3 text-left">Doctor</th>
@@ -130,7 +125,7 @@ export default function AdminAppointments() {
                                         </td>
                                         <td className="px-6 py-4 text-gray-600 max-w-48 truncate">{a.reasonForVisit}</td>
                                         <td className="px-6 py-4">
-                                            <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${statusColors[a.status]}`}>{a.status}</span>
+                                            <AppointmentStatusBadge status={a.status} />
                                         </td>
                                     </tr>
                                 ))}
@@ -145,7 +140,7 @@ export default function AdminAppointments() {
                         <select
                             value={limit}
                             onChange={(e) => setLimit(Number(e.target.value))}
-                            className="border border-gray-200 rounded-lg px-2 py-1.5 text-sm"
+                                className="border border-gray-200 rounded px-2 py-1.5 text-sm"
                         >
                             <option value={10}>10 / page</option>
                             <option value={20}>20 / page</option>
@@ -154,14 +149,14 @@ export default function AdminAppointments() {
                         <button
                             onClick={() => setPage((p) => Math.max(1, p - 1))}
                             disabled={page <= 1}
-                            className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg disabled:opacity-50"
+                                className="px-3 py-1.5 text-sm border border-gray-200 rounded disabled:opacity-50"
                         >
                             Previous
                         </button>
                         <button
                             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                             disabled={page >= totalPages}
-                            className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg disabled:opacity-50"
+                                className="px-3 py-1.5 text-sm border border-gray-200 rounded disabled:opacity-50"
                         >
                             Next
                         </button>

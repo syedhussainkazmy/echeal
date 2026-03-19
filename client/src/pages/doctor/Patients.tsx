@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../lib/api';
 import { Users, ChevronRight, UserCircle } from 'lucide-react';
+import { PageLoading } from '../../components/ui/PageLoading';
 
 interface Patient {
     _id: string;
@@ -39,7 +40,7 @@ export default function DoctorPatients() {
         setPage(1);
     }, [search]);
 
-    if (loading) return <div className="flex justify-center items-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" /></div>;
+    if (loading) return <PageLoading role="doctor" />;
 
     return (
         <div className="space-y-8">
@@ -48,14 +49,14 @@ export default function DoctorPatients() {
                 <p className="text-gray-500 mt-1">Patients who have had appointments with you</p>
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-50 flex items-center gap-4">
+                <div className="bg-white rounded-md border border-gray-100 overflow-hidden">
+                    <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-4">
                     <input
                         type="text"
                         placeholder="Search patients..."
                         value={search}
                         onChange={e => setSearch(e.target.value)}
-                        className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                            className="flex-1 border border-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     <span className="text-sm text-gray-500">{total} patients</span>
                 </div>
@@ -99,14 +100,14 @@ export default function DoctorPatients() {
                         <button
                             onClick={() => setPage((p) => Math.max(1, p - 1))}
                             disabled={page <= 1}
-                            className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg disabled:opacity-50"
+                                className="px-3 py-1.5 text-sm border border-gray-200 rounded disabled:opacity-50"
                         >
                             Previous
                         </button>
                         <button
                             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                             disabled={page >= totalPages}
-                            className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg disabled:opacity-50"
+                                className="px-3 py-1.5 text-sm border border-gray-200 rounded disabled:opacity-50"
                         >
                             Next
                         </button>

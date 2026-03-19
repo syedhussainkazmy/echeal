@@ -14,17 +14,22 @@ const AdminDashboard = lazy(() => import('./pages/admin/Dashboard'));
 const AdminStaff = lazy(() => import('./pages/admin/Staff'));
 const AdminAppointments = lazy(() => import('./pages/admin/Appointments'));
 const AdminInventory = lazy(() => import('./pages/admin/Inventory'));
+const AdminPrescriptions = lazy(() => import('./pages/admin/Prescriptions.tsx'));
 
 const DoctorDashboard = lazy(() => import('./pages/doctor/Dashboard'));
 const DoctorAppointments = lazy(() => import('./pages/doctor/Appointments'));
 const DoctorPatients = lazy(() => import('./pages/doctor/Patients'));
 const PatientEHR = lazy(() => import('./pages/doctor/PatientEHR'));
 const DoctorProfile = lazy(() => import('./pages/doctor/Profile'));
+const DoctorPrescriptions = lazy(() => import('./pages/doctor/Prescriptions.tsx'));
+const DoctorPatientPurchases = lazy(() => import('./pages/doctor/PatientPurchases.tsx'));
 
 const PatientDashboard = lazy(() => import('./pages/patient/Dashboard'));
 const PatientAppointments = lazy(() => import('./pages/patient/Appointments'));
 const PatientVitals = lazy(() => import('./pages/patient/Vitals'));
 const PatientProfile = lazy(() => import('./pages/patient/Profile'));
+const PatientPrescriptions = lazy(() => import('./pages/patient/Prescriptions.tsx'));
+const PatientStore = lazy(() => import('./pages/patient/Store.tsx'));
 
 const AppLoadingFallback = () => (
   <div className="flex justify-center items-center min-h-[60vh]">
@@ -50,6 +55,8 @@ function App() {
                   <Routes>
                     <Route path="/" element={<PatientDashboard />} />
                     <Route path="/appointments" element={<PatientAppointments />} />
+                    <Route path="/prescriptions" element={<PatientPrescriptions />} />
+                    <Route path="/store" element={<PatientStore />} />
                     <Route path="/vitals" element={<PatientVitals />} />
                     <Route path="/profile" element={<PatientProfile />} />
                   </Routes>
@@ -65,6 +72,8 @@ function App() {
                     <Route path="/" element={<DoctorDashboard />} />
                     <Route path="/appointments" element={<DoctorAppointments />} />
                     <Route path="/patients" element={<DoctorPatients />} />
+                    <Route path="/prescriptions" element={<DoctorPrescriptions />} />
+                    <Route path="/patient-purchases" element={<DoctorPatientPurchases />} />
                     <Route path="/patients/:patientId/ehr" element={<PatientEHR />} />
                     <Route path="/profile" element={<DoctorProfile />} />
                   </Routes>
@@ -80,6 +89,7 @@ function App() {
                     <Route path="/" element={<AdminDashboard />} />
                     <Route path="/staff" element={<AdminStaff />} />
                     <Route path="/appointments" element={<AdminAppointments />} />
+                    <Route path="/prescriptions" element={<AdminPrescriptions />} />
                     <Route path="/inventory" element={<AdminInventory />} />
                   </Routes>
                 </AdminLayout>
