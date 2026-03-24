@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import api from '../../lib/api';
 import { format } from 'date-fns';
-import { CalendarDays, Clock, CheckCircle, XCircle, X } from 'lucide-react';
+import { CalendarDays, Clock, CheckCircle, XCircle, X, Video } from 'lucide-react';
 import { PageLoading } from '../../components/ui/PageLoading';
 import { AppointmentStatusBadge } from '../../components/appointments/AppointmentStatusBadge';
+import { VideoCall } from '../../components/video/VideoCall';
 
 interface Appointment {
     _id: string;
@@ -12,6 +13,8 @@ interface Appointment {
     reasonForVisit: string;
     status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
     notes?: string;
+    videoRoomId?: string;
+    videoStartedAt?: string;
 }
 
 export default function DoctorAppointments() {
@@ -19,6 +22,8 @@ export default function DoctorAppointments() {
     const [loading, setLoading] = useState(true);
     const [notesModal, setNotesModal] = useState<{ id: string; notes: string } | null>(null);
     const [saving, setSaving] = useState(false);
+    const [videoCall, setVideoCall] = useState<{ roomId: string; appointmentId: string } | null>(null);
+    const [startingVideo, setStartingVideo] = useState(false);
 
     const fetchAppointments = async () => {
         try {
@@ -29,6 +34,22 @@ export default function DoctorAppointments() {
     };
 
     useEffect(() => { fetchAppointments(); }, []);
+
+    const startVideoCall = async (appointmentId: string) => {
+        setStartingVideo(true);
+        try {
+            const res = await api.post(`/video/room/${appointmentId}`);
+            setVideoCall({
+                roomId: res.data.roomId,
+                appointmentId: appointmentId
+            });
+        } catch (e) {
+            console.error('Failed to start video call:', e);
+            alert('Failed to start video call. Please try again.');
+        } finally {
+            setStartingVideo(false);
+        }
+    };
 
     const updateStatus = async (id: string, status: string, notes?: string) => {
         setSaving(true);
@@ -81,6 +102,14 @@ export default function DoctorAppointments() {
             )}
             {a.status === 'confirmed' && (
                 <div className="flex gap-2 mt-4 pt-4 border-t border-gray-50">
+                    <button
+                        onClick={() => startVideoCall(a._id)}
+                        disabled={startingVideo}
+                        className="flex items-center gap-1.5 text-sm bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition-colors font-medium disabled:opacity-50"
+                    >
+                        <Video className="h-3.5 w-3.5" />
+                        {startingVideo ? 'Starting...' : 'Start Video Consultation'}
+                    </button>
                     <button onClick={() => setNotesModal({ id: a._id, notes: a.notes || '' })} className="flex items-center gap-1.5 text-sm bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors font-medium">
                         <CheckCircle className="h-3.5 w-3.5" /> Mark Complete
                     </button>
@@ -148,6 +177,19 @@ export default function DoctorAppointments() {
                     <CalendarDays className="h-12 w-12 text-gray-300 mx-auto mb-3" />
                     <p className="text-gray-400">No appointments yet. Patients will book once you're verified.</p>
                 </div>
+            )}
+
+            {/* Video Call Modal */}
+            {videoCall && (
+                <VideoCall
+                    appointmentId={videoCall.appointmentId}
+                    roomId={videoCall.roomId}
+                    isDoctor={true}
+                    onEnd={() => {
+                        setVideoCall(null);
+                        fetchAppointments();
+                    }}
+                />
             )}
         </div>
     );

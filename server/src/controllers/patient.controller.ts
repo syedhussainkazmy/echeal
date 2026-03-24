@@ -197,6 +197,7 @@ export const getPatientAppointments = async (req: AuthRequest, res: Response) =>
         const [appointments, total] = await Promise.all([
             Appointment.find(filters)
                 .populate('doctor', 'firstName lastName email')
+                .select('appointmentDate reasonForVisit status videoRoomId videoStartedAt videoEndedAt')
                 .sort({ appointmentDate: sortOrder })
                 .skip(skip)
                 .limit(limit),

@@ -15,6 +15,9 @@ export interface IAppointment extends Document {
     reasonForVisit: string;
     status: AppointmentStatus;
     notes?: string;
+    videoRoomId?: string;
+    videoStartedAt?: Date;
+    videoEndedAt?: Date;
 }
 
 const AppointmentSchema: Schema = new Schema(
@@ -29,6 +32,9 @@ const AppointmentSchema: Schema = new Schema(
             default: AppointmentStatus.PENDING,
         },
         notes: { type: String },
+        videoRoomId: { type: String },
+        videoStartedAt: { type: Date },
+        videoEndedAt: { type: Date },
     },
     {
         timestamps: true,

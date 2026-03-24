@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import api from '../../lib/api';
 import { format } from 'date-fns';
-import { CalendarDays, Clock, Plus, X, Stethoscope } from 'lucide-react';
+import { CalendarDays, Clock, Plus, X, Stethoscope, Video } from 'lucide-react';
 import { PageLoading } from '../../components/ui/PageLoading';
 import { ModalShell } from '../../components/ui/ModalShell';
 import { AppointmentStatusBadge } from '../../components/appointments/AppointmentStatusBadge';
+import { VideoCall } from '../../components/video/VideoCall';
 
 interface Doctor {
     _id: string;
@@ -20,6 +21,8 @@ interface Appointment {
     reasonForVisit: string;
     status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
     notes?: string;
+    videoRoomId?: string;
+    videoStartedAt?: string;
 }
 
 const formatLocalDateTimeInput = (date: Date): string => {
@@ -37,6 +40,8 @@ export default function PatientAppointments() {
     const [reason, setReason] = useState('');
     const [booking, setBooking] = useState(false);
     const [error, setError] = useState('');
+    const [videoCall, setVideoCall] = useState<{ roomId: string; appointmentId: string } | null>(null);
+    const [joiningVideo, setJoiningVideo] = useState(false);
 
     const fetchData = async () => {
         try {
@@ -54,6 +59,36 @@ export default function PatientAppointments() {
     };
 
     useEffect(() => { fetchData(); }, []);
+
+    // Auto-refresh appointments every 10 seconds to check for video ready status
+    useEffect(() => {
+        const interval = setInterval(() => {
+            api.get('/patient/appointments', { params: { page: 1, limit: 100, sortOrder: 'desc' } })
+                .then(res => setAppointments(res.data.data))
+                .catch(console.error);
+        }, 10000);
+        return () => clearInterval(interval);
+    }, []);
+
+    const joinVideoCall = async (appointmentId: string) => {
+        setJoiningVideo(true);
+        try {
+            const res = await api.get(`/video/room/${appointmentId}`);
+            if (res.data.roomId) {
+                setVideoCall({
+                    roomId: res.data.roomId,
+                    appointmentId: appointmentId
+                });
+            } else {
+                alert('Video call has not been started yet. Please wait for the doctor to start the call.');
+            }
+        } catch (e) {
+            console.error('Failed to join video call:', e);
+            alert('Failed to join video call. Please try again.');
+        } finally {
+            setJoiningVideo(false);
+        }
+    };
 
     const handleBook = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -200,6 +235,20 @@ export default function PatientAppointments() {
                                     <p className="text-sm font-medium text-gray-700 flex items-center gap-1 justify-end"><CalendarDays className="h-3.5 w-3.5" />{format(new Date(a.appointmentDate), 'MMM d, yyyy')}</p>
                                     <p className="text-xs text-gray-500 flex items-center gap-1 justify-end mt-0.5"><Clock className="h-3 w-3" />{format(new Date(a.appointmentDate), 'h:mm a')}</p>
                                     <AppointmentStatusBadge status={a.status} />
+                                    {a.status === 'confirmed' && (
+                                        <button
+                                            onClick={() => joinVideoCall(a._id)}
+                                            disabled={joiningVideo}
+                                            className={`mt-2 flex items-center gap-1.5 text-sm px-3 py-1.5 rounded transition-colors disabled:opacity-50 ${
+                                                a.videoRoomId
+                                                    ? 'bg-green-600 text-white hover:bg-green-700'
+                                                    : 'bg-purple-600 text-white hover:bg-purple-700'
+                                            }`}
+                                        >
+                                            <Video className="h-3.5 w-3.5" />
+                                            {a.videoRoomId ? 'Video Ready - Join' : (joiningVideo ? 'Joining...' : 'Join Video Call')}
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         ))}
@@ -227,6 +276,19 @@ export default function PatientAppointments() {
                         ))}
                     </div>
                 </section>
+            )}
+
+            {/* Video Call Modal */}
+            {videoCall && (
+                <VideoCall
+                    appointmentId={videoCall.appointmentId}
+                    roomId={videoCall.roomId}
+                    isDoctor={false}
+                    onEnd={() => {
+                        setVideoCall(null);
+                        fetchData();
+                    }}
+                />
             )}
         </div>
     );

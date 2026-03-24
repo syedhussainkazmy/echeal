@@ -1,7 +1,9 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { SocketProvider } from './context/SocketContext';
 import { ProtectedRoute } from './components/layout/ProtectedRoute';
+import { ErrorBoundary } from './components/ui/ErrorBoundary';
 
 const Login = lazy(() => import('./pages/auth/Login'));
 const Register = lazy(() => import('./pages/auth/Register'));
@@ -39,70 +41,74 @@ const AppLoadingFallback = () => (
 
 function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <Suspense fallback={<AppLoadingFallback />}>
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/admin/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+    <ErrorBoundary>
+      <BrowserRouter>
+        <AuthProvider>
+          <SocketProvider>
+            <Suspense fallback={<AppLoadingFallback />}>
+              <Routes>
+              {/* Public Routes */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/admin/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
 
-            {/* Patient Routes */}
-            <Route path="/patient/*" element={
-              <ProtectedRoute allowedRoles={['patient']}>
-                <PatientLayout>
-                  <Routes>
-                    <Route path="/" element={<PatientDashboard />} />
-                    <Route path="/appointments" element={<PatientAppointments />} />
-                    <Route path="/prescriptions" element={<PatientPrescriptions />} />
-                    <Route path="/store" element={<PatientStore />} />
-                    <Route path="/vitals" element={<PatientVitals />} />
-                    <Route path="/profile" element={<PatientProfile />} />
-                  </Routes>
-                </PatientLayout>
-              </ProtectedRoute>
-            } />
+              {/* Patient Routes */}
+              <Route path="/patient/*" element={
+                <ProtectedRoute allowedRoles={['patient']}>
+                  <PatientLayout>
+                    <Routes>
+                      <Route path="/" element={<PatientDashboard />} />
+                      <Route path="/appointments" element={<PatientAppointments />} />
+                      <Route path="/prescriptions" element={<PatientPrescriptions />} />
+                      <Route path="/store" element={<PatientStore />} />
+                      <Route path="/vitals" element={<PatientVitals />} />
+                      <Route path="/profile" element={<PatientProfile />} />
+                    </Routes>
+                  </PatientLayout>
+                </ProtectedRoute>
+              } />
 
-            {/* Doctor Routes */}
-            <Route path="/doctor/*" element={
-              <ProtectedRoute allowedRoles={['doctor']}>
-                <DoctorLayout>
-                  <Routes>
-                    <Route path="/" element={<DoctorDashboard />} />
-                    <Route path="/appointments" element={<DoctorAppointments />} />
-                    <Route path="/patients" element={<DoctorPatients />} />
-                    <Route path="/prescriptions" element={<DoctorPrescriptions />} />
-                    <Route path="/patient-purchases" element={<DoctorPatientPurchases />} />
-                    <Route path="/patients/:patientId/ehr" element={<PatientEHR />} />
-                    <Route path="/profile" element={<DoctorProfile />} />
-                  </Routes>
-                </DoctorLayout>
-              </ProtectedRoute>
-            } />
+              {/* Doctor Routes */}
+              <Route path="/doctor/*" element={
+                <ProtectedRoute allowedRoles={['doctor']}>
+                  <DoctorLayout>
+                    <Routes>
+                      <Route path="/" element={<DoctorDashboard />} />
+                      <Route path="/appointments" element={<DoctorAppointments />} />
+                      <Route path="/patients" element={<DoctorPatients />} />
+                      <Route path="/prescriptions" element={<DoctorPrescriptions />} />
+                      <Route path="/patient-purchases" element={<DoctorPatientPurchases />} />
+                      <Route path="/patients/:patientId/ehr" element={<PatientEHR />} />
+                      <Route path="/profile" element={<DoctorProfile />} />
+                    </Routes>
+                  </DoctorLayout>
+                </ProtectedRoute>
+              } />
 
-            {/* Admin Routes */}
-            <Route path="/admin/*" element={
-              <ProtectedRoute allowedRoles={['admin']}>
-                <AdminLayout>
-                  <Routes>
-                    <Route path="/" element={<AdminDashboard />} />
-                    <Route path="/staff" element={<AdminStaff />} />
-                    <Route path="/appointments" element={<AdminAppointments />} />
-                    <Route path="/prescriptions" element={<AdminPrescriptions />} />
-                    <Route path="/inventory" element={<AdminInventory />} />
-                  </Routes>
-                </AdminLayout>
-              </ProtectedRoute>
-            } />
+              {/* Admin Routes */}
+              <Route path="/admin/*" element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <AdminLayout>
+                    <Routes>
+                      <Route path="/" element={<AdminDashboard />} />
+                      <Route path="/staff" element={<AdminStaff />} />
+                      <Route path="/appointments" element={<AdminAppointments />} />
+                      <Route path="/prescriptions" element={<AdminPrescriptions />} />
+                      <Route path="/inventory" element={<AdminInventory />} />
+                    </Routes>
+                  </AdminLayout>
+                </ProtectedRoute>
+              } />
 
-            {/* Root redirect */}
-            <Route path="/" element={<Navigate to="/login" replace />} />
-            <Route path="*" element={<Navigate to="/login" replace />} />
-          </Routes>
-        </Suspense>
+              {/* Root redirect */}
+              <Route path="/" element={<Navigate to="/login" replace />} />
+              <Route path="*" element={<Navigate to="/login" replace />} />
+            </Routes>
+          </Suspense>
+        </SocketProvider>
       </AuthProvider>
     </BrowserRouter>
+    </ErrorBoundary>
   );
 }
 
