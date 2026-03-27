@@ -6,6 +6,13 @@ import { Appointment } from '../models/Appointment.js';
 import { DoctorProfile } from '../models/DoctorProfile.js';
 import { User } from '../models/User.js';
 import { buildPaginatedResponse, parsePagination } from '../utils/pagination.js';
+import { createAuditLog } from '../models/AuditLog.js';
+
+// Helper to get user full name
+const getUserName = (user: AuthRequest['user']): string => {
+    if (!user) return 'Unknown';
+    return `${user.firstName} ${user.lastName}`;
+};
 
 export const getPatientDashboard = async (req: AuthRequest, res: Response) => {
     try {
@@ -20,6 +27,21 @@ export const getPatientDashboard = async (req: AuthRequest, res: Response) => {
             .populate('doctor', 'firstName lastName')
             .sort({ appointmentDate: 1 })
             .limit(5);
+
+        // Audit: Log access to patient dashboard
+        createAuditLog(
+            req.user!.id,
+            req.user!.role,
+            getUserName(req.user),
+            'read',
+            'patient',
+            {
+                resourceId: patientId,
+                details: 'Viewed patient dashboard',
+                ipAddress: (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || req.socket?.remoteAddress,
+                userAgent: req.headers['user-agent'],
+            }
+        );
 
         res.status(200).json({ profile, recentVitals, upcomingAppointments });
     } catch (error) {
@@ -40,6 +62,21 @@ export const updatePatientProfile = async (req: AuthRequest, res: Response) => {
         ).populate('user', '-passwordHash');
 
         if (!updated) return res.status(404).json({ message: 'Patient profile not found' });
+
+        // Audit: Log profile update
+        createAuditLog(
+            req.user!.id,
+            req.user!.role,
+            getUserName(req.user),
+            'update',
+            'patient',
+            {
+                resourceId: updated._id,
+                details: 'Updated patient profile',
+                ipAddress: (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || req.socket?.remoteAddress,
+                userAgent: req.headers['user-agent'],
+            }
+        );
 
         res.status(200).json(updated);
     } catch (error) {
@@ -65,6 +102,22 @@ export const addVital = async (req: AuthRequest, res: Response) => {
         });
 
         const savedVital = await newVital.save();
+
+        // Audit: Log vital signs creation
+        createAuditLog(
+            req.user!.id,
+            req.user!.role,
+            getUserName(req.user),
+            'create',
+            'vital',
+            {
+                resourceId: savedVital._id,
+                details: 'Added new vital signs',
+                ipAddress: (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || req.socket?.remoteAddress,
+                userAgent: req.headers['user-agent'],
+            }
+        );
+
         res.status(201).json(savedVital);
     } catch (error) {
         console.error('Error adding vital:', error);

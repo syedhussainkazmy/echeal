@@ -17,6 +17,7 @@ const AdminStaff = lazy(() => import('./pages/admin/Staff'));
 const AdminAppointments = lazy(() => import('./pages/admin/Appointments'));
 const AdminInventory = lazy(() => import('./pages/admin/Inventory'));
 const AdminPrescriptions = lazy(() => import('./pages/admin/Prescriptions.tsx'));
+const AdminReports = lazy(() => import('./pages/admin/Reports'));
 
 const DoctorDashboard = lazy(() => import('./pages/doctor/Dashboard'));
 const DoctorAppointments = lazy(() => import('./pages/doctor/Appointments'));
@@ -25,6 +26,8 @@ const PatientEHR = lazy(() => import('./pages/doctor/PatientEHR'));
 const DoctorProfile = lazy(() => import('./pages/doctor/Profile'));
 const DoctorPrescriptions = lazy(() => import('./pages/doctor/Prescriptions.tsx'));
 const DoctorPatientPurchases = lazy(() => import('./pages/doctor/PatientPurchases.tsx'));
+const DoctorAnalytics = lazy(() => import('./pages/doctor/Analytics'));
+const DoctorReports = lazy(() => import('./pages/doctor/Reports'));
 
 const PatientDashboard = lazy(() => import('./pages/patient/Dashboard'));
 const PatientAppointments = lazy(() => import('./pages/patient/Appointments'));
@@ -32,6 +35,9 @@ const PatientVitals = lazy(() => import('./pages/patient/Vitals'));
 const PatientProfile = lazy(() => import('./pages/patient/Profile'));
 const PatientPrescriptions = lazy(() => import('./pages/patient/Prescriptions.tsx'));
 const PatientStore = lazy(() => import('./pages/patient/Store.tsx'));
+const PatientAnalytics = lazy(() => import('./pages/patient/Analytics'));
+const PatientSymptomChecker = lazy(() => import('./pages/patient/SymptomChecker'));
+const PatientHealthcareChatbot = lazy(() => import('./pages/patient/HealthcareChatbot'));
 
 const AppLoadingFallback = () => (
   <div className="flex justify-center items-center min-h-[60vh]">
@@ -62,6 +68,9 @@ function App() {
                       <Route path="/prescriptions" element={<PatientPrescriptions />} />
                       <Route path="/store" element={<PatientStore />} />
                       <Route path="/vitals" element={<PatientVitals />} />
+                      <Route path="/analytics" element={<PatientAnalytics />} />
+                      <Route path="/symptom-checker" element={<PatientSymptomChecker />} />
+                      <Route path="/chatbot" element={<PatientHealthcareChatbot />} />
                       <Route path="/profile" element={<PatientProfile />} />
                     </Routes>
                   </PatientLayout>
@@ -79,6 +88,8 @@ function App() {
                       <Route path="/prescriptions" element={<DoctorPrescriptions />} />
                       <Route path="/patient-purchases" element={<DoctorPatientPurchases />} />
                       <Route path="/patients/:patientId/ehr" element={<PatientEHR />} />
+                      <Route path="/analytics" element={<DoctorAnalytics />} />
+                      <Route path="/reports" element={<DoctorReports />} />
                       <Route path="/profile" element={<DoctorProfile />} />
                     </Routes>
                   </DoctorLayout>
@@ -95,6 +106,7 @@ function App() {
                       <Route path="/appointments" element={<AdminAppointments />} />
                       <Route path="/prescriptions" element={<AdminPrescriptions />} />
                       <Route path="/inventory" element={<AdminInventory />} />
+                      <Route path="/reports" element={<AdminReports />} />
                     </Routes>
                   </AdminLayout>
                 </ProtectedRoute>

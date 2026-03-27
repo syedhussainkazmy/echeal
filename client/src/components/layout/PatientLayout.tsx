@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { LayoutDashboard, CalendarDays, Activity, UserCircle, HeartPulse, ClipboardList, ShoppingCart } from 'lucide-react';
+import { LayoutDashboard, CalendarDays, Activity, UserCircle, HeartPulse, ClipboardList, ShoppingCart, BarChart3, Stethoscope, MessageSquare } from 'lucide-react';
 import SidebarLayout from './SidebarLayout';
 
 const navItems = [
@@ -9,6 +9,9 @@ const navItems = [
     { to: '/patient/prescriptions', icon: ClipboardList, label: 'Prescriptions' },
     { to: '/patient/store', icon: ShoppingCart, label: 'Medical Store' },
     { to: '/patient/vitals', icon: Activity, label: 'My Vitals' },
+    { to: '/patient/analytics', icon: BarChart3, label: 'Health Analytics' },
+    { to: '/patient/symptom-checker', icon: Stethoscope, label: 'Symptom Checker' },
+    { to: '/patient/chatbot', icon: MessageSquare, label: 'Health Assistant' },
     { to: '/patient/profile', icon: UserCircle, label: 'My Profile' },
 ];
 

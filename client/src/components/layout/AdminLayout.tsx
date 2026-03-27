@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { LayoutDashboard, Users, Package, CalendarDays, ShieldCheck, ClipboardList } from 'lucide-react';
+import { LayoutDashboard, Users, Package, CalendarDays, ShieldCheck, ClipboardList, FileText } from 'lucide-react';
 import SidebarLayout from './SidebarLayout';
 
 const navItems = [
@@ -9,6 +9,7 @@ const navItems = [
     { to: '/admin/appointments', icon: CalendarDays, label: 'Appointments' },
     { to: '/admin/prescriptions', icon: ClipboardList, label: 'Prescriptions' },
     { to: '/admin/inventory', icon: Package, label: 'Inventory' },
+    { to: '/admin/reports', icon: FileText, label: 'Reports' },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

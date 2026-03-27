@@ -33,6 +33,9 @@ export const verifyToken = async (req: AuthRequest, res: Response, next: NextFun
     }
 };
 
+// Alias for verifyToken
+export const authenticate = verifyToken;
+
 export const authorizeRoles = (...roles: UserRole[]) => {
     return (req: AuthRequest, res: Response, next: NextFunction) => {
         if (!req.user || !roles.includes(req.user.role)) {

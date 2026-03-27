@@ -62,6 +62,10 @@ import patientRoutes from './routes/patient.routes.js';
 import doctorRoutes from './routes/doctor.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import videoRoutes from './routes/video.routes.js';
+import consentRoutes from './routes/consent.routes.js';
+import analyticsRoutes from './routes/analytics.routes.js';
+import reportingRoutes from './routes/reporting.routes.js';
+import llmRoutes from './routes/llm.routes.js';
 
 // Basic route
 app.get('/api/health', (req, res) => {
@@ -74,6 +78,10 @@ app.use('/api/patient', patientRoutes);
 app.use('/api/doctor', doctorRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/video', videoRoutes);
+app.use('/api/consent', consentRoutes);
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/reporting', reportingRoutes);
+app.use('/api/llm', llmRoutes);
 
 // Socket.io authentication middleware
 io.use((socket, next) => {
